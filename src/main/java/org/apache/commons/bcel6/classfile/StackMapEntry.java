@@ -20,6 +20,7 @@ package org.apache.commons.bcel6.classfile;
 import java.io.DataInput;
 import java.io.DataOutputStream;
 import java.io.IOException;
+
 import org.apache.commons.bcel6.Const;
 
 /**
@@ -43,72 +44,51 @@ public final class StackMapEntry implements Node, Cloneable
 
     /**
      * Construct object from input stream.
-     * 
+     *
      * @param input Input stream
      * @throws IOException
      */
-    StackMapEntry(DataInput input, ConstantPool constant_pool) throws IOException {
+    StackMapEntry(final DataInput input, final ConstantPool constant_pool) throws IOException {
         this(input.readByte() & 0xFF, -1, null, null, constant_pool);
 
-        if (frame_type >= Const.SAME_FRAME && frame_type <= Const.SAME_FRAME_MAX) {
-            byte_code_offset = frame_type - Const.SAME_FRAME;
-        } else if (frame_type >= Const.SAME_LOCALS_1_STACK_ITEM_FRAME && 
-                   frame_type <= Const.SAME_LOCALS_1_STACK_ITEM_FRAME_MAX) {
-            byte_code_offset = frame_type - Const.SAME_LOCALS_1_STACK_ITEM_FRAME;
-            types_of_stack_items = new StackMapType[1];
-            types_of_stack_items[0] = new StackMapType(input, constant_pool);
-        } else if (frame_type == Const.SAME_LOCALS_1_STACK_ITEM_FRAME_EXTENDED) {
-            byte_code_offset = input.readShort();
-            types_of_stack_items = new StackMapType[1];
-            types_of_stack_items[0] = new StackMapType(input, constant_pool);
-        } else if (frame_type >= Const.CHOP_FRAME && frame_type <= Const.CHOP_FRAME_MAX) {
-            byte_code_offset = input.readShort();
-        } else if (frame_type == Const.SAME_FRAME_EXTENDED) {
-            byte_code_offset = input.readShort();
-        } else if (frame_type >= Const.APPEND_FRAME && frame_type <= Const.APPEND_FRAME_MAX) {
-            byte_code_offset = input.readShort();
-            int number_of_locals = frame_type - 251;
-            types_of_locals = new StackMapType[number_of_locals];
+        if (this.frame_type >= Const.SAME_FRAME && this.frame_type <= Const.SAME_FRAME_MAX) {
+            this.byte_code_offset = this.frame_type - Const.SAME_FRAME;
+        } else if (this.frame_type >= Const.SAME_LOCALS_1_STACK_ITEM_FRAME &&
+                   this.frame_type <= Const.SAME_LOCALS_1_STACK_ITEM_FRAME_MAX) {
+            this.byte_code_offset = this.frame_type - Const.SAME_LOCALS_1_STACK_ITEM_FRAME;
+            this.types_of_stack_items = new StackMapType[1];
+            this.types_of_stack_items[0] = new StackMapType(input, constant_pool);
+        } else if (this.frame_type == Const.SAME_LOCALS_1_STACK_ITEM_FRAME_EXTENDED) {
+            this.byte_code_offset = input.readShort();
+            this.types_of_stack_items = new StackMapType[1];
+            this.types_of_stack_items[0] = new StackMapType(input, constant_pool);
+        } else if (this.frame_type >= Const.CHOP_FRAME && this.frame_type <= Const.CHOP_FRAME_MAX) {
+            this.byte_code_offset = input.readShort();
+        } else if (this.frame_type == Const.SAME_FRAME_EXTENDED) {
+            this.byte_code_offset = input.readShort();
+        } else if (this.frame_type >= Const.APPEND_FRAME && this.frame_type <= Const.APPEND_FRAME_MAX) {
+            this.byte_code_offset = input.readShort();
+            final int number_of_locals = this.frame_type - 251;
+            this.types_of_locals = new StackMapType[number_of_locals];
             for (int i = 0; i < number_of_locals; i++) {
-                types_of_locals[i] = new StackMapType(input, constant_pool);
-            }            
-        } else if (frame_type == Const.FULL_FRAME) {        
-            byte_code_offset = input.readShort();
-            int number_of_locals = input.readShort();
-            types_of_locals = new StackMapType[number_of_locals];
-            for (int i = 0; i < number_of_locals; i++) {
-                types_of_locals[i] = new StackMapType(input, constant_pool);
+                this.types_of_locals[i] = new StackMapType(input, constant_pool);
             }
-            int number_of_stack_items = input.readShort();
-            types_of_stack_items = new StackMapType[number_of_stack_items];
+        } else if (this.frame_type == Const.FULL_FRAME) {
+            this.byte_code_offset = input.readShort();
+            final int number_of_locals = input.readShort();
+            this.types_of_locals = new StackMapType[number_of_locals];
+            for (int i = 0; i < number_of_locals; i++) {
+                this.types_of_locals[i] = new StackMapType(input, constant_pool);
+            }
+            final int number_of_stack_items = input.readShort();
+            this.types_of_stack_items = new StackMapType[number_of_stack_items];
             for (int i = 0; i < number_of_stack_items; i++) {
-                types_of_stack_items[i] = new StackMapType(input, constant_pool);
+                this.types_of_stack_items[i] = new StackMapType(input, constant_pool);
             }
         } else {
             /* Can't happen */
-            throw new ClassFormatException ("Invalid frame type found while parsing stack map table: " + frame_type);
+            throw new ClassFormatException ("Invalid frame type found while parsing stack map table: " + this.frame_type);
         }
-    }
-
-    /**
-     * DO NOT USE
-     *
-     * @param byte_code_offset
-     * @param number_of_locals NOT USED
-     * @param types_of_locals array of {@link StackMapType}s of locals
-     * @param number_of_stack_items NOT USED
-     * @param types_of_stack_items array ot {@link StackMapType}s of stack items
-     * @param constant_pool the constant pool
-     * @deprecated Since 6.0, use {@link #StackMapEntry(int, int, StackMapType[], StackMapType[], ConstantPool)}
-     * instead
-     */
-    public StackMapEntry(int byte_code_offset, int number_of_locals,
-            StackMapType[] types_of_locals, int number_of_stack_items,
-            StackMapType[] types_of_stack_items, ConstantPool constant_pool) {
-        this.byte_code_offset = byte_code_offset;
-        this.types_of_locals = types_of_locals != null ? types_of_locals : new StackMapType[0];
-        this.types_of_stack_items = types_of_stack_items != null ? types_of_stack_items : new StackMapType[0];
-        this.constant_pool = constant_pool;
     }
 
     /**
@@ -120,9 +100,9 @@ public final class StackMapEntry implements Node, Cloneable
      * @param types_of_stack_items array ot {@link StackMapType}s of stack items
      * @param constant_pool the constant pool
      */
-    public StackMapEntry(int tag, int byte_code_offset,
-            StackMapType[] types_of_locals,
-            StackMapType[] types_of_stack_items, ConstantPool constant_pool) {
+    public StackMapEntry(final int tag, final int byte_code_offset,
+            final StackMapType[] types_of_locals,
+            final StackMapType[] types_of_stack_items, final ConstantPool constant_pool) {
         this.frame_type = tag;
         this.byte_code_offset = byte_code_offset;
         this.types_of_locals = types_of_locals != null ? types_of_locals : new StackMapType[0];
@@ -137,38 +117,38 @@ public final class StackMapEntry implements Node, Cloneable
      * @param file Output file stream
      * @throws IOException
      */
-    public final void dump( DataOutputStream file ) throws IOException {
-        file.write(frame_type);
-        if (frame_type >= Const.SAME_FRAME && frame_type <= Const.SAME_FRAME_MAX) {
+    public final void dump( final DataOutputStream file ) throws IOException {
+        file.write(this.frame_type);
+        if (this.frame_type >= Const.SAME_FRAME && this.frame_type <= Const.SAME_FRAME_MAX) {
             // nothing to be done
-        } else if (frame_type >= Const.SAME_LOCALS_1_STACK_ITEM_FRAME &&
-                   frame_type <= Const.SAME_LOCALS_1_STACK_ITEM_FRAME_MAX) {
-            types_of_stack_items[0].dump(file);
-        } else if (frame_type == Const.SAME_LOCALS_1_STACK_ITEM_FRAME_EXTENDED) {
-            file.writeShort(byte_code_offset);
-            types_of_stack_items[0].dump(file);
-        } else if (frame_type >= Const.CHOP_FRAME && frame_type <= Const.CHOP_FRAME_MAX) {
-            file.writeShort(byte_code_offset);
-        } else if (frame_type == Const.SAME_FRAME_EXTENDED) {
-            file.writeShort(byte_code_offset);
-        } else if (frame_type >= Const.APPEND_FRAME && frame_type <= Const.APPEND_FRAME_MAX) {
-            file.writeShort(byte_code_offset);
-            for (StackMapType type : types_of_locals) {
-                type.dump(file);
-            }            
-        } else if (frame_type == Const.FULL_FRAME) {        
-            file.writeShort(byte_code_offset);
-            file.writeShort(types_of_locals.length);
-            for (StackMapType type : types_of_locals) {
+        } else if (this.frame_type >= Const.SAME_LOCALS_1_STACK_ITEM_FRAME &&
+                   this.frame_type <= Const.SAME_LOCALS_1_STACK_ITEM_FRAME_MAX) {
+            this.types_of_stack_items[0].dump(file);
+        } else if (this.frame_type == Const.SAME_LOCALS_1_STACK_ITEM_FRAME_EXTENDED) {
+            file.writeShort(this.byte_code_offset);
+            this.types_of_stack_items[0].dump(file);
+        } else if (this.frame_type >= Const.CHOP_FRAME && this.frame_type <= Const.CHOP_FRAME_MAX) {
+            file.writeShort(this.byte_code_offset);
+        } else if (this.frame_type == Const.SAME_FRAME_EXTENDED) {
+            file.writeShort(this.byte_code_offset);
+        } else if (this.frame_type >= Const.APPEND_FRAME && this.frame_type <= Const.APPEND_FRAME_MAX) {
+            file.writeShort(this.byte_code_offset);
+            for (final StackMapType type : this.types_of_locals) {
                 type.dump(file);
             }
-            file.writeShort(types_of_stack_items.length);
-            for (StackMapType type : types_of_stack_items) {
+        } else if (this.frame_type == Const.FULL_FRAME) {
+            file.writeShort(this.byte_code_offset);
+            file.writeShort(this.types_of_locals.length);
+            for (final StackMapType type : this.types_of_locals) {
+                type.dump(file);
+            }
+            file.writeShort(this.types_of_stack_items.length);
+            for (final StackMapType type : this.types_of_stack_items) {
                 type.dump(file);
             }
         } else {
             /* Can't happen */
-            throw new ClassFormatException ("Invalid Stack map table tag: " + frame_type);
+            throw new ClassFormatException ("Invalid Stack map table tag: " + this.frame_type);
         }
     }
 
@@ -178,42 +158,42 @@ public final class StackMapEntry implements Node, Cloneable
      */
     @Override
     public final String toString() {
-        StringBuilder buf = new StringBuilder(64);
+        final StringBuilder buf = new StringBuilder(64);
         buf.append("(");
-        if (frame_type >= Const.SAME_FRAME && frame_type <= Const.SAME_FRAME_MAX) {
+        if (this.frame_type >= Const.SAME_FRAME && this.frame_type <= Const.SAME_FRAME_MAX) {
             buf.append("SAME");
-        } else if (frame_type >= Const.SAME_LOCALS_1_STACK_ITEM_FRAME &&
-                  frame_type <= Const.SAME_LOCALS_1_STACK_ITEM_FRAME_MAX) {
+        } else if (this.frame_type >= Const.SAME_LOCALS_1_STACK_ITEM_FRAME &&
+                  this.frame_type <= Const.SAME_LOCALS_1_STACK_ITEM_FRAME_MAX) {
             buf.append("SAME_LOCALS_1_STACK");
-        } else if (frame_type == Const.SAME_LOCALS_1_STACK_ITEM_FRAME_EXTENDED) {
+        } else if (this.frame_type == Const.SAME_LOCALS_1_STACK_ITEM_FRAME_EXTENDED) {
             buf.append("SAME_LOCALS_1_STACK_EXTENDED");
-        } else if (frame_type >= Const.CHOP_FRAME && frame_type <= Const.CHOP_FRAME_MAX) {
-            buf.append("CHOP ").append(String.valueOf(251-frame_type));
-        } else if (frame_type == Const.SAME_FRAME_EXTENDED) {
+        } else if (this.frame_type >= Const.CHOP_FRAME && this.frame_type <= Const.CHOP_FRAME_MAX) {
+            buf.append("CHOP ").append(String.valueOf(251-this.frame_type));
+        } else if (this.frame_type == Const.SAME_FRAME_EXTENDED) {
             buf.append("SAME_EXTENDED");
-        } else if (frame_type >= Const.APPEND_FRAME && frame_type <= Const.APPEND_FRAME_MAX) {
-            buf.append("APPEND ").append(String.valueOf(frame_type-251));
-        } else if (frame_type == Const.FULL_FRAME) {        
+        } else if (this.frame_type >= Const.APPEND_FRAME && this.frame_type <= Const.APPEND_FRAME_MAX) {
+            buf.append("APPEND ").append(String.valueOf(this.frame_type-251));
+        } else if (this.frame_type == Const.FULL_FRAME) {
             buf.append("FULL");
         } else {
-            buf.append("UNKNOWN (").append(frame_type).append(")");
+            buf.append("UNKNOWN (").append(this.frame_type).append(")");
         }
-        buf.append(", offset delta=").append(byte_code_offset);
-        if (types_of_locals.length > 0) {
+        buf.append(", offset delta=").append(this.byte_code_offset);
+        if (this.types_of_locals.length > 0) {
             buf.append(", locals={");
-            for (int i = 0; i < types_of_locals.length; i++) {
-                buf.append(types_of_locals[i]);
-                if (i < types_of_locals.length - 1) {
+            for (int i = 0; i < this.types_of_locals.length; i++) {
+                buf.append(this.types_of_locals[i]);
+                if (i < this.types_of_locals.length - 1) {
                     buf.append(", ");
                 }
             }
             buf.append("}");
         }
-        if (types_of_stack_items.length > 0) {
+        if (this.types_of_stack_items.length > 0) {
             buf.append(", stack items={");
-            for (int i = 0; i < types_of_stack_items.length; i++) {
-                buf.append(types_of_stack_items[i]);
-                if (i < types_of_stack_items.length - 1) {
+            for (int i = 0; i < this.types_of_stack_items.length; i++) {
+                buf.append(this.types_of_stack_items[i]);
+                if (i < this.types_of_stack_items.length - 1) {
                     buf.append(", ");
                 }
             }
@@ -229,44 +209,44 @@ public final class StackMapEntry implements Node, Cloneable
      *
      */
     int getMapEntrySize() {
-        if (frame_type >= Const.SAME_FRAME && frame_type <= Const.SAME_FRAME_MAX) {
+        if (this.frame_type >= Const.SAME_FRAME && this.frame_type <= Const.SAME_FRAME_MAX) {
             return 1;
-        } else if (frame_type >= Const.SAME_LOCALS_1_STACK_ITEM_FRAME && 
-                   frame_type <= Const.SAME_LOCALS_1_STACK_ITEM_FRAME_MAX) {
-            return 1 + (types_of_stack_items[0].hasIndex() ? 3 : 1);
-        } else if (frame_type == Const.SAME_LOCALS_1_STACK_ITEM_FRAME_EXTENDED) {
-            return 3 + (types_of_stack_items[0].hasIndex() ? 3 : 1);
-        } else if (frame_type >= Const.CHOP_FRAME && frame_type <= Const.CHOP_FRAME_MAX) {
+        } else if (this.frame_type >= Const.SAME_LOCALS_1_STACK_ITEM_FRAME &&
+                   this.frame_type <= Const.SAME_LOCALS_1_STACK_ITEM_FRAME_MAX) {
+            return 1 + (this.types_of_stack_items[0].hasIndex() ? 3 : 1);
+        } else if (this.frame_type == Const.SAME_LOCALS_1_STACK_ITEM_FRAME_EXTENDED) {
+            return 3 + (this.types_of_stack_items[0].hasIndex() ? 3 : 1);
+        } else if (this.frame_type >= Const.CHOP_FRAME && this.frame_type <= Const.CHOP_FRAME_MAX) {
             return 3;
-        } else if (frame_type == Const.SAME_FRAME_EXTENDED) {
+        } else if (this.frame_type == Const.SAME_FRAME_EXTENDED) {
             return 3;
-        } else if (frame_type >= Const.APPEND_FRAME && frame_type <= Const.APPEND_FRAME_MAX) {
+        } else if (this.frame_type >= Const.APPEND_FRAME && this.frame_type <= Const.APPEND_FRAME_MAX) {
             int len = 3;
-            for (int i = 0; i < types_of_locals.length; i++) {
-                len += types_of_locals[i].hasIndex() ? 3 : 1;
-            }            
-            return len;
-        } else if (frame_type == Const.FULL_FRAME) {        
-            int len = 7;
-            for (int i = 0; i < types_of_locals.length; i++) {
-                len += types_of_locals[i].hasIndex() ? 3 : 1;
+            for (int i = 0; i < this.types_of_locals.length; i++) {
+                len += this.types_of_locals[i].hasIndex() ? 3 : 1;
             }
-            for (int i = 0; i < types_of_stack_items.length; i++) {
-                len += types_of_stack_items[i].hasIndex() ? 3 : 1;
+            return len;
+        } else if (this.frame_type == Const.FULL_FRAME) {
+            int len = 7;
+            for (int i = 0; i < this.types_of_locals.length; i++) {
+                len += this.types_of_locals[i].hasIndex() ? 3 : 1;
+            }
+            for (int i = 0; i < this.types_of_stack_items.length; i++) {
+                len += this.types_of_stack_items[i].hasIndex() ? 3 : 1;
             }
             return len;
         } else {
-            throw new RuntimeException("Invalid StackMap frame_type: " + frame_type);
+            throw new RuntimeException("Invalid StackMap frame_type: " + this.frame_type);
         }
     }
 
 
-    public void setFrameType( int f ) {
+    public void setFrameType( final int f ) {
         if (f >= Const.SAME_FRAME && f <= Const.SAME_FRAME_MAX) {
-            byte_code_offset = f - Const.SAME_FRAME;
-        } else if (f >= Const.SAME_LOCALS_1_STACK_ITEM_FRAME && 
+            this.byte_code_offset = f - Const.SAME_FRAME;
+        } else if (f >= Const.SAME_LOCALS_1_STACK_ITEM_FRAME &&
                    f <= Const.SAME_LOCALS_1_STACK_ITEM_FRAME_MAX) {
-            byte_code_offset = f - Const.SAME_LOCALS_1_STACK_ITEM_FRAME;
+            this.byte_code_offset = f - Const.SAME_LOCALS_1_STACK_ITEM_FRAME;
         } else if (f == Const.SAME_LOCALS_1_STACK_ITEM_FRAME_EXTENDED) { // CHECKSTYLE IGNORE EmptyBlock
         } else if (f >= Const.CHOP_FRAME && f <= Const.CHOP_FRAME_MAX) { // CHECKSTYLE IGNORE EmptyBlock
         } else if (f == Const.SAME_FRAME_EXTENDED) { // CHECKSTYLE IGNORE EmptyBlock
@@ -275,45 +255,45 @@ public final class StackMapEntry implements Node, Cloneable
         } else {
             throw new RuntimeException("Invalid StackMap frame_type");
         }
-        frame_type = f;
+        this.frame_type = f;
     }
 
 
     public int getFrameType() {
-        return frame_type;
+        return this.frame_type;
     }
 
 
-    public void setByteCodeOffset( int new_offset ) {
+    public void setByteCodeOffset( final int new_offset ) {
         if (new_offset < 0 || new_offset > 32767) {
             throw new RuntimeException("Invalid StackMap offset: " + new_offset);
         }
 
-        if (frame_type >= Const.SAME_FRAME &&
-            frame_type <= Const.SAME_FRAME_MAX) {
+        if (this.frame_type >= Const.SAME_FRAME &&
+            this.frame_type <= Const.SAME_FRAME_MAX) {
             if (new_offset > Const.SAME_FRAME_MAX) {
-                frame_type = Const.SAME_FRAME_EXTENDED;
+                this.frame_type = Const.SAME_FRAME_EXTENDED;
             } else {
-                frame_type = new_offset;
+                this.frame_type = new_offset;
             }
-        } else if (frame_type >= Const.SAME_LOCALS_1_STACK_ITEM_FRAME &&
-                   frame_type <= Const.SAME_LOCALS_1_STACK_ITEM_FRAME_MAX) {
+        } else if (this.frame_type >= Const.SAME_LOCALS_1_STACK_ITEM_FRAME &&
+                   this.frame_type <= Const.SAME_LOCALS_1_STACK_ITEM_FRAME_MAX) {
             if (new_offset > Const.SAME_FRAME_MAX) {
-                frame_type = Const.SAME_LOCALS_1_STACK_ITEM_FRAME_EXTENDED;
+                this.frame_type = Const.SAME_LOCALS_1_STACK_ITEM_FRAME_EXTENDED;
             } else {
-                frame_type = Const.SAME_LOCALS_1_STACK_ITEM_FRAME + new_offset;
+                this.frame_type = Const.SAME_LOCALS_1_STACK_ITEM_FRAME + new_offset;
             }
-        } else if (frame_type == Const.SAME_LOCALS_1_STACK_ITEM_FRAME_EXTENDED) { // CHECKSTYLE IGNORE EmptyBlock
-        } else if (frame_type >= Const.CHOP_FRAME &&
-                   frame_type <= Const.CHOP_FRAME_MAX) { // CHECKSTYLE IGNORE EmptyBlock
-        } else if (frame_type == Const.SAME_FRAME_EXTENDED) { // CHECKSTYLE IGNORE EmptyBlock
-        } else if (frame_type >= Const.APPEND_FRAME &&
-                   frame_type <= Const.APPEND_FRAME_MAX) { // CHECKSTYLE IGNORE EmptyBlock
-        } else if (frame_type == Const.FULL_FRAME) { // CHECKSTYLE IGNORE EmptyBlock
+        } else if (this.frame_type == Const.SAME_LOCALS_1_STACK_ITEM_FRAME_EXTENDED) { // CHECKSTYLE IGNORE EmptyBlock
+        } else if (this.frame_type >= Const.CHOP_FRAME &&
+                   this.frame_type <= Const.CHOP_FRAME_MAX) { // CHECKSTYLE IGNORE EmptyBlock
+        } else if (this.frame_type == Const.SAME_FRAME_EXTENDED) { // CHECKSTYLE IGNORE EmptyBlock
+        } else if (this.frame_type >= Const.APPEND_FRAME &&
+                   this.frame_type <= Const.APPEND_FRAME_MAX) { // CHECKSTYLE IGNORE EmptyBlock
+        } else if (this.frame_type == Const.FULL_FRAME) { // CHECKSTYLE IGNORE EmptyBlock
         } else {
-            throw new RuntimeException("Invalid StackMap frame_type: " + frame_type);
+            throw new RuntimeException("Invalid StackMap frame_type: " + this.frame_type);
         }
-        byte_code_offset = new_offset;
+        this.byte_code_offset = new_offset;
     }
 
 
@@ -322,55 +302,55 @@ public final class StackMapEntry implements Node, Cloneable
      * entry to the next.  Note that this might cause the the
      * frame type to change.  Note also that delta may be negative.
      *
-     * @param int offset delta
+     * @param delta offset delta
      */
-    public void updateByteCodeOffset(int delta) {
-        setByteCodeOffset(byte_code_offset + delta);
+    public void updateByteCodeOffset(final int delta) {
+        this.setByteCodeOffset(this.byte_code_offset + delta);
     }
 
 
     public int getByteCodeOffset() {
-        return byte_code_offset;
+        return this.byte_code_offset;
     }
 
 
     @java.lang.Deprecated
-    public void setNumberOfLocals( int n ) { // TODO unused
+    public void setNumberOfLocals( final int n ) { // TODO unused
     }
 
 
     public int getNumberOfLocals() {
-        return types_of_locals.length;
+        return this.types_of_locals.length;
     }
 
 
-    public void setTypesOfLocals( StackMapType[] types ) {
-        types_of_locals = types != null ? types : new StackMapType[0];
+    public void setTypesOfLocals( final StackMapType[] types ) {
+        this.types_of_locals = types != null ? types : new StackMapType[0];
     }
 
 
     public StackMapType[] getTypesOfLocals() {
-        return types_of_locals;
+        return this.types_of_locals;
     }
 
 
     @java.lang.Deprecated
-    public void setNumberOfStackItems( int n ) { // TODO unused
+    public void setNumberOfStackItems( final int n ) { // TODO unused
     }
 
 
     public int getNumberOfStackItems() {
-        return types_of_stack_items.length;
+        return this.types_of_stack_items.length;
     }
 
 
-    public void setTypesOfStackItems( StackMapType[] types ) {
-        types_of_stack_items = types != null ? types : new StackMapType[0];
+    public void setTypesOfStackItems( final StackMapType[] types ) {
+        this.types_of_stack_items = types != null ? types : new StackMapType[0];
     }
 
 
     public StackMapType[] getTypesOfStackItems() {
-        return types_of_stack_items;
+        return this.types_of_stack_items;
     }
 
 
@@ -380,18 +360,18 @@ public final class StackMapEntry implements Node, Cloneable
     public StackMapEntry copy() {
         StackMapEntry e;
         try {
-            e = (StackMapEntry) clone();
-        } catch (CloneNotSupportedException ex) {
+            e = (StackMapEntry) this.clone();
+        } catch (final CloneNotSupportedException ex) {
             throw new Error("Clone Not Supported");
         }
 
-        e.types_of_locals = new StackMapType[types_of_locals.length];
-        for (int i = 0; i < types_of_locals.length; i++) {
-            e.types_of_locals[i] = types_of_locals[i].copy();
+        e.types_of_locals = new StackMapType[this.types_of_locals.length];
+        for (int i = 0; i < this.types_of_locals.length; i++) {
+            e.types_of_locals[i] = this.types_of_locals[i].copy();
         }
-        e.types_of_stack_items = new StackMapType[types_of_stack_items.length];
-        for (int i = 0; i < types_of_stack_items.length; i++) {
-            e.types_of_stack_items[i] = types_of_stack_items[i].copy();
+        e.types_of_stack_items = new StackMapType[this.types_of_stack_items.length];
+        for (int i = 0; i < this.types_of_stack_items.length; i++) {
+            e.types_of_stack_items[i] = this.types_of_stack_items[i].copy();
         }
         return e;
     }
@@ -405,7 +385,7 @@ public final class StackMapEntry implements Node, Cloneable
      * @param v Visitor object
      */
     @Override
-    public void accept( Visitor v ) {
+    public void accept( final Visitor v ) {
         v.visitStackMapEntry(this);
     }
 
@@ -414,14 +394,14 @@ public final class StackMapEntry implements Node, Cloneable
      * @return Constant pool used by this object.
      */
     public final ConstantPool getConstantPool() {
-        return constant_pool;
+        return this.constant_pool;
     }
 
 
     /**
      * @param constant_pool Constant pool to be used for this object.
      */
-    public final void setConstantPool( ConstantPool constant_pool ) {
+    public final void setConstantPool( final ConstantPool constant_pool ) {
         this.constant_pool = constant_pool;
     }
 }

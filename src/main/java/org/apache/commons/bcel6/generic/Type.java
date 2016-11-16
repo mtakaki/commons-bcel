@@ -23,6 +23,8 @@ import java.util.List;
 import org.apache.commons.bcel6.Const;
 import org.apache.commons.bcel6.classfile.ClassFormatException;
 import org.apache.commons.bcel6.classfile.Utility;
+import org.apache.commons.bcel6.verifier.structurals.LocalVariables;
+import org.apache.commons.bcel6.verifier.structurals.OperandStack;
 
 /**
  * Abstract super class for all possible java types, namely basic types
@@ -31,18 +33,6 @@ import org.apache.commons.bcel6.classfile.Utility;
  * @version $Id$
  */
 public abstract class Type {
-
-    /**
-     * @deprecated (since 6.0) will be made private; do not access directly, use getter/setter
-     */
-    @Deprecated
-    protected byte type; // TODO should be final (and private)
-
-    /**
-     * @deprecated (since 6.0) will be made private; do not access directly, use getter/setter
-     */
-    @Deprecated
-    protected String signature; // signature for the type TODO should be private
     /** Predefined constants
      */
     public static final BasicType VOID = new BasicType(Const.T_VOID);
@@ -65,10 +55,12 @@ public abstract class Type {
     public static final Type UNKNOWN = new Type(Const.T_UNKNOWN, "<unknown object>") {
     };
 
+    private final byte type; // TODO should be final (and private)
+    private String signature; // signature for the type TODO should be private
 
-    protected Type(byte t, String s) {
-        type = t;
-        signature = s;
+    protected Type(final byte t, final String s) {
+        this.type = t;
+        this.signature = s;
     }
 
 
@@ -77,7 +69,7 @@ public abstract class Type {
      */
     @Override
     public int hashCode() {
-        return type ^ signature.hashCode();
+        return this.type ^ this.signature.hashCode();
     }
 
 
@@ -85,10 +77,10 @@ public abstract class Type {
      * @return whether the Types are equal
      */
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
           if (o instanceof Type) {
-              Type t = (Type)o;
-              return (type == t.type) && signature.equals(t.signature);
+              final Type t = (Type)o;
+              return (this.type == t.type) && this.signature.equals(t.signature);
           }
           return false;
     }
@@ -98,7 +90,7 @@ public abstract class Type {
      * @return signature for given type.
      */
     public String getSignature() {
-        return signature;
+        return this.signature;
     }
 
 
@@ -106,7 +98,7 @@ public abstract class Type {
      * @return type as defined in Constants
      */
     public byte getType() {
-        return type;
+        return this.type;
     }
 
     /**
@@ -128,7 +120,7 @@ public abstract class Type {
      * @return stack size of this type (2 for long and double, 0 for void, 1 otherwise)
      */
     public int getSize() {
-        switch (type) {
+        switch (this.type) {
             case Const.T_DOUBLE:
             case Const.T_LONG:
                 return 2;
@@ -145,8 +137,8 @@ public abstract class Type {
      */
     @Override
     public String toString() {
-        return ((this.equals(Type.NULL) || (type >= Const.T_UNKNOWN))) ? signature : Utility
-                .signatureToString(signature, false);
+        return ((this.equals(Type.NULL) || (this.type >= Const.T_UNKNOWN))) ? this.signature : Utility
+                .signatureToString(this.signature, false);
     }
 
 
@@ -158,10 +150,10 @@ public abstract class Type {
      * @param arg_types what are the argument types
      * @return method signature for given type(s).
      */
-    public static String getMethodSignature( Type return_type, Type[] arg_types ) {
-        StringBuilder buf = new StringBuilder("(");
+    public static String getMethodSignature( final Type return_type, final Type[] arg_types ) {
+        final StringBuilder buf = new StringBuilder("(");
         if (arg_types != null) {
-            for (Type arg_type : arg_types) {
+            for (final Type arg_type : arg_types) {
                 buf.append(arg_type.getSignature());
             }
         }
@@ -179,12 +171,12 @@ public abstract class Type {
     };//int consumed_chars=0; // Remember position in string, see getArgumentTypes
 
 
-    private static int unwrap( ThreadLocal<Integer> tl ) {
+    private static int unwrap( final ThreadLocal<Integer> tl ) {
         return tl.get().intValue();
     }
 
 
-    private static void wrap( ThreadLocal<Integer> tl, int value ) {
+    private static void wrap( final ThreadLocal<Integer> tl, final int value ) {
         tl.set(Integer.valueOf(value));
     }
 
@@ -195,8 +187,8 @@ public abstract class Type {
      * @return type object
      */
     // @since 6.0 no longer final
-    public static Type getType( String signature ) throws StringIndexOutOfBoundsException {
-        byte type = Utility.typeOfSignature(signature);
+    public static Type getType( final String signature ) throws StringIndexOutOfBoundsException {
+        final byte type = Utility.typeOfSignature(signature);
         if (type <= Const.T_VOID) {
             //corrected concurrent private static field acess
             wrap(consumed_chars, 1);
@@ -207,14 +199,14 @@ public abstract class Type {
                 dim++;
             } while (signature.charAt(dim) == '[');
             // Recurse, but just once, if the signature is ok
-            Type t = getType(signature.substring(dim));
+            final Type t = getType(signature.substring(dim));
             //corrected concurrent private static field acess
             //  consumed_chars += dim; // update counter - is replaced by
-            int _temp = unwrap(consumed_chars) + dim;
+            final int _temp = unwrap(consumed_chars) + dim;
             wrap(consumed_chars, _temp);
             return new ArrayType(t, dim);
         } else { // type == T_REFERENCE
-            int index = signature.indexOf(';'); // Look for closing `;'
+            final int index = signature.indexOf(';'); // Look for closing `;'
             if (index < 0) {
                 throw new ClassFormatException("Invalid signature: " + signature);
             }
@@ -231,12 +223,12 @@ public abstract class Type {
      * @param signature signature string such as (Ljava/lang/String;)V
      * @return return type
      */
-    public static Type getReturnType( String signature ) {
+    public static Type getReturnType( final String signature ) {
         try {
             // Read return type after `)'
-            int index = signature.lastIndexOf(')') + 1;
+            final int index = signature.lastIndexOf(')') + 1;
             return getType(signature.substring(index));
-        } catch (StringIndexOutOfBoundsException e) { // Should never occur
+        } catch (final StringIndexOutOfBoundsException e) { // Should never occur
             throw new ClassFormatException("Invalid method signature: " + signature, e);
         }
     }
@@ -247,8 +239,8 @@ public abstract class Type {
      * @param signature signature string such as (Ljava/lang/String;)V
      * @return array of argument types
      */
-    public static Type[] getArgumentTypes( String signature ) {
-        List<Type> vec = new ArrayList<>();
+    public static Type[] getArgumentTypes( final String signature ) {
+        final List<Type> vec = new ArrayList<>();
         int index;
         Type[] types;
         try { // Read all declarations between for `(' and `)'
@@ -261,7 +253,7 @@ public abstract class Type {
                 //corrected concurrent private static field acess
                 index += unwrap(consumed_chars); // update position
             }
-        } catch (StringIndexOutOfBoundsException e) { // Should never occur
+        } catch (final StringIndexOutOfBoundsException e) { // Should never occur
             throw new ClassFormatException("Invalid method signature: " + signature, e);
         }
         types = new Type[vec.size()];
@@ -274,7 +266,7 @@ public abstract class Type {
      * @param cl Java class
      * @return corresponding Type object
      */
-    public static Type getType( java.lang.Class<?> cl ) {
+    public static Type getType( final java.lang.Class<?> cl ) {
         if (cl == null) {
             throw new IllegalArgumentException("Class must not be null");
         }
@@ -318,8 +310,8 @@ public abstract class Type {
      * @param classes an array of runtime class objects
      * @return array of corresponding Type objects
      */
-    public static Type[] getTypes( java.lang.Class<?>[] classes ) {
-        Type[] ret = new Type[classes.length];
+    public static Type[] getTypes( final java.lang.Class<?>[] classes ) {
+        final Type[] ret = new Type[classes.length];
         for (int i = 0; i < ret.length; i++) {
             ret[i] = getType(classes[i]);
         }
@@ -327,10 +319,10 @@ public abstract class Type {
     }
 
 
-    public static String getSignature( java.lang.reflect.Method meth ) {
-        StringBuilder sb = new StringBuilder("(");
-        Class<?>[] params = meth.getParameterTypes(); // avoid clone
-        for (Class<?> param : params) {
+    public static String getSignature( final java.lang.reflect.Method meth ) {
+        final StringBuilder sb = new StringBuilder("(");
+        final Class<?>[] params = meth.getParameterTypes(); // avoid clone
+        for (final Class<?> param : params) {
             sb.append(getType(param).getSignature());
         }
         sb.append(")");
@@ -338,19 +330,19 @@ public abstract class Type {
         return sb.toString();
     }
 
-    static int size(int coded) {
+    static int size(final int coded) {
         return coded & 3;
     }
 
-    static int consumed(int coded) {
+    static int consumed(final int coded) {
         return coded >> 2;
     }
 
-    static int encode(int size, int consumed) {
+    static int encode(final int size, final int consumed) {
         return consumed << 2 | size;
     }
 
-    static int getArgumentTypesSize( String signature ) {
+    static int getArgumentTypesSize( final String signature ) {
         int res = 0;
         int index;
         try { // Read all declarations between for `(' and `)'
@@ -359,18 +351,18 @@ public abstract class Type {
             }
             index = 1; // current string position
             while (signature.charAt(index) != ')') {
-                int coded = getTypeSize(signature.substring(index));
+                final int coded = getTypeSize(signature.substring(index));
                 res += size(coded);
                 index += consumed(coded);
             }
-        } catch (StringIndexOutOfBoundsException e) { // Should never occur
+        } catch (final StringIndexOutOfBoundsException e) { // Should never occur
             throw new ClassFormatException("Invalid method signature: " + signature, e);
         }
         return res;
     }
 
-    static int getTypeSize( String signature ) throws StringIndexOutOfBoundsException {
-        byte type = Utility.typeOfSignature(signature);
+    static int getTypeSize( final String signature ) throws StringIndexOutOfBoundsException {
+        final byte type = Utility.typeOfSignature(signature);
         if (type <= Const.T_VOID) {
             return encode(BasicType.getType(type).getSize(), 1);
         } else if (type == Const.T_ARRAY) {
@@ -379,10 +371,10 @@ public abstract class Type {
                 dim++;
             } while (signature.charAt(dim) == '[');
             // Recurse, but just once, if the signature is ok
-            int consumed = consumed(getTypeSize(signature.substring(dim)));
+            final int consumed = consumed(getTypeSize(signature.substring(dim)));
             return encode(1, dim + consumed);
         } else { // type == T_REFERENCE
-            int index = signature.indexOf(';'); // Look for closing `;'
+            final int index = signature.indexOf(';'); // Look for closing `;'
             if (index < 0) {
                 throw new ClassFormatException("Invalid signature: " + signature);
             }
@@ -391,8 +383,8 @@ public abstract class Type {
     }
 
 
-    static int getReturnTypeSize(String signature) {
-        int index = signature.lastIndexOf(')') + 1;
+    static int getReturnTypeSize(final String signature) {
+        final int index = signature.lastIndexOf(')') + 1;
         return Type.size(getTypeSize(signature.substring(index)));
     }
 
@@ -402,7 +394,7 @@ public abstract class Type {
      * The signature has a complicated dependency on other parameter
      * so it's tricky to do it in a call to the super ctor.
      */
-    void setSignature(String signature) {
+    void setSignature(final String signature) {
         this.signature = signature;
     }
 }

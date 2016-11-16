@@ -17,10 +17,9 @@
  */
 package org.apache.commons.bcel6.classfile;
 
-/** 
- * Thrown when the BCEL attempts to read a class file and determines
- * that the file is malformed or otherwise cannot be interpreted as a
- * class file.
+/**
+ * Thrown when the BCEL attempts to read a class file and determines that the
+ * file is malformed or otherwise cannot be interpreted as a class file.
  *
  * @version $Id$
  */
@@ -32,16 +31,11 @@ public class ClassFormatException extends RuntimeException {
         super();
     }
 
-
-    public ClassFormatException(String s) {
+    public ClassFormatException(final String s) {
         super(s);
     }
 
-    /**
-     * {@inheritDoc}
-     * @since 6.0
-     */
-    public ClassFormatException(String message, Throwable cause) {
+    public ClassFormatException(final String message, final Throwable cause) {
         super(message, cause);
     }
 }

@@ -40,7 +40,7 @@ import org.apache.commons.bcel6.classfile.Utility;
  * @version $Id$
  * @see Instruction
  * @see BranchHandle
- * @see InstructionList 
+ * @see InstructionList
  */
 public class InstructionHandle {
 
@@ -48,28 +48,24 @@ public class InstructionHandle {
     private InstructionHandle prev;
     private Instruction instruction;
 
-    /**
-     * @deprecated (since 6.0) will be made private; do not access directly, use getter/setter
-     */
-    @Deprecated
-    protected int i_position = -1; // byte code offset of instruction
+    private int i_position = -1; // byte code offset of instruction
 
     private Set<InstructionTargeter> targeters;
     private Map<Object, Object> attributes;
 
 
     public final InstructionHandle getNext() {
-        return next;
+        return this.next;
     }
 
 
     public final InstructionHandle getPrev() {
-        return prev;
+        return this.prev;
     }
 
 
     public final Instruction getInstruction() {
-        return instruction;
+        return this.instruction;
     }
 
 
@@ -77,17 +73,17 @@ public class InstructionHandle {
      * Replace current instruction contained in this handle.
      * Old instruction is disposed using Instruction.dispose().
      */
-    public void setInstruction( Instruction i ) { // Overridden in BranchHandle TODO could be package-protected?
+    public void setInstruction( final Instruction i ) { // Overridden in BranchHandle TODO could be package-protected?
         if (i == null) {
             throw new ClassGenException("Assigning null to handle");
         }
         if ((this.getClass() != BranchHandle.class) && (i instanceof BranchInstruction)) {
             throw new ClassGenException("Assigning branch instruction " + i + " to plain handle");
         }
-        if (instruction != null) {
-            instruction.dispose();
+        if (this.instruction != null) {
+            this.instruction.dispose();
         }
-        instruction = i;
+        this.instruction = i;
     }
 
 
@@ -96,15 +92,15 @@ public class InstructionHandle {
      * anything. Meant to be used by a debugger, implementing
      * breakpoints. Current instruction is returned.
      */
-    public Instruction swapInstruction( Instruction i ) {
-        Instruction oldInstruction = instruction;
-        instruction = i;
+    public Instruction swapInstruction( final Instruction i ) {
+        final Instruction oldInstruction = this.instruction;
+        this.instruction = i;
         return oldInstruction;
     }
 
 
-    /*private*/protected InstructionHandle(Instruction i) {
-        setInstruction(i);
+    /*private*/protected InstructionHandle(final Instruction i) {
+        this.setInstruction(i);
     }
 
     private static InstructionHandle ih_list = null; // List of reusable handles
@@ -112,11 +108,11 @@ public class InstructionHandle {
 
     /** Factory method.
      */
-    static InstructionHandle getInstructionHandle( Instruction i ) {
+    static InstructionHandle getInstructionHandle( final Instruction i ) {
         if (ih_list == null) {
             return new InstructionHandle(i);
         }
-        InstructionHandle ih = ih_list;
+        final InstructionHandle ih = ih_list;
         ih_list = ih.next;
         ih.setInstruction(i);
         return ih;
@@ -133,8 +129,8 @@ public class InstructionHandle {
      * @param max_offset the maximum offset that may be caused by these instructions
      * @return additional offset caused by possible change of this instruction's length
      */
-    protected int updatePosition( int offset, int max_offset ) {
-        i_position += offset;
+    protected int updatePosition( final int offset, final int max_offset ) {
+        this.i_position += offset;
         return 0;
     }
 
@@ -144,22 +140,22 @@ public class InstructionHandle {
      * InstructionList.setPositions() has been called.
      */
     public int getPosition() {
-        return i_position;
+        return this.i_position;
     }
 
 
     /** Set the position, i.e., the byte code offset of the contained
      * instruction.
      */
-    void setPosition( int pos ) {
-        i_position = pos;
+    void setPosition( final int pos ) {
+        this.i_position = pos;
     }
 
 
     /** Overridden in BranchHandle
      */
     protected void addHandle() {
-        next = ih_list;
+        this.next = ih_list;
         ih_list = this;
     }
 
@@ -168,21 +164,21 @@ public class InstructionHandle {
      * Delete contents, i.e., remove user access and make handle reusable.
      */
     void dispose() {
-        next = prev = null;
-        instruction.dispose();
-        instruction = null;
-        i_position = -1;
-        attributes = null;
-        removeAllTargeters();
-        addHandle();
+        this.next = this.prev = null;
+        this.instruction.dispose();
+        this.instruction = null;
+        this.i_position = -1;
+        this.attributes = null;
+        this.removeAllTargeters();
+        this.addHandle();
     }
 
 
     /** Remove all targeters, if any.
      */
     public void removeAllTargeters() {
-        if (targeters != null) {
-            targeters.clear();
+        if (this.targeters != null) {
+            this.targeters.clear();
         }
     }
 
@@ -190,9 +186,9 @@ public class InstructionHandle {
     /**
      * Denote this handle isn't referenced anymore by t.
      */
-    public void removeTargeter( InstructionTargeter t ) {
-        if (targeters != null) {
-            targeters.remove(t);
+    public void removeTargeter( final InstructionTargeter t ) {
+        if (this.targeters != null) {
+            this.targeters.remove(t);
         }
     }
 
@@ -200,17 +196,17 @@ public class InstructionHandle {
     /**
      * Denote this handle is being referenced by t.
      */
-    public void addTargeter( InstructionTargeter t ) {
-        if (targeters == null) {
-            targeters = new HashSet<>();
+    public void addTargeter( final InstructionTargeter t ) {
+        if (this.targeters == null) {
+            this.targeters = new HashSet<>();
         }
         //if(!targeters.contains(t))
-        targeters.add(t);
+        this.targeters.add(t);
     }
 
 
     public boolean hasTargeters() {
-        return (targeters != null) && (targeters.size() > 0);
+        return (this.targeters != null) && (this.targeters.size() > 0);
     }
 
 
@@ -218,27 +214,27 @@ public class InstructionHandle {
      * @return null, if there are no targeters
      */
     public InstructionTargeter[] getTargeters() {
-        if (!hasTargeters()) {
+        if (!this.hasTargeters()) {
             return new InstructionTargeter[0];
         }
-        InstructionTargeter[] t = new InstructionTargeter[targeters.size()];
-        targeters.toArray(t);
+        final InstructionTargeter[] t = new InstructionTargeter[this.targeters.size()];
+        this.targeters.toArray(t);
         return t;
     }
 
 
-    /** @return a (verbose) string representation of the contained instruction. 
+    /** @return a (verbose) string representation of the contained instruction.
      */
-    public String toString( boolean verbose ) {
-        return Utility.format(i_position, 4, false, ' ') + ": " + instruction.toString(verbose);
+    public String toString( final boolean verbose ) {
+        return Utility.format(this.i_position, 4, false, ' ') + ": " + this.instruction.toString(verbose);
     }
 
 
-    /** @return a string representation of the contained instruction. 
+    /** @return a string representation of the contained instruction.
      */
     @Override
     public String toString() {
-        return toString(true);
+        return this.toString(true);
     }
 
 
@@ -247,11 +243,11 @@ public class InstructionHandle {
      * @param key the key object to store/retrieve the attribute
      * @param attr the attribute to associate with this handle
      */
-    public void addAttribute( Object key, Object attr ) {
-        if (attributes == null) {
-            attributes = new HashMap<>(3);
+    public void addAttribute( final Object key, final Object attr ) {
+        if (this.attributes == null) {
+            this.attributes = new HashMap<>(3);
         }
-        attributes.put(key, attr);
+        this.attributes.put(key, attr);
     }
 
 
@@ -259,9 +255,9 @@ public class InstructionHandle {
      *
      * @param key the key object to retrieve the attribute
      */
-    public void removeAttribute( Object key ) {
-        if (attributes != null) {
-            attributes.remove(key);
+    public void removeAttribute( final Object key ) {
+        if (this.attributes != null) {
+            this.attributes.remove(key);
         }
     }
 
@@ -270,9 +266,9 @@ public class InstructionHandle {
      *
      * @param key the key object to store/retrieve the attribute
      */
-    public Object getAttribute( Object key ) {
-        if (attributes != null) {
-            return attributes.get(key);
+    public Object getAttribute( final Object key ) {
+        if (this.attributes != null) {
+            return this.attributes.get(key);
         }
         return null;
     }
@@ -281,10 +277,10 @@ public class InstructionHandle {
     /** @return all attributes associated with this handle
      */
     public Collection<Object> getAttributes() {
-        if (attributes == null) {
-            attributes = new HashMap<>(3);
+        if (this.attributes == null) {
+            this.attributes = new HashMap<>(3);
         }
-        return attributes.values();
+        return this.attributes.values();
     }
 
 
@@ -292,16 +288,16 @@ public class InstructionHandle {
      *
      * @param v Visitor object
      */
-    public void accept( Visitor v ) {
-        instruction.accept(v);
+    public void accept( final Visitor v ) {
+        this.instruction.accept(v);
     }
 
 
     /**
      * @param next the next to set
-     * @ since 6.0
+     * since 6.0
      */
-    final InstructionHandle setNext(InstructionHandle next) {
+    final InstructionHandle setNext(final InstructionHandle next) {
         this.next = next;
         return next;
     }
@@ -309,9 +305,9 @@ public class InstructionHandle {
 
     /**
      * @param prev the prev to set
-     * @ since 6.0
+     * since 6.0
      */
-    final InstructionHandle setPrev(InstructionHandle prev) {
+    final InstructionHandle setPrev(final InstructionHandle prev) {
         this.prev = prev;
         return prev;
     }

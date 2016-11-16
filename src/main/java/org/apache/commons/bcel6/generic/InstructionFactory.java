@@ -19,7 +19,7 @@ package org.apache.commons.bcel6.generic;
 
 import org.apache.commons.bcel6.Const;
 
-/** 
+/**
  * Instances of this class may be used, e.g., to generate typed
  * versions of instructions. Its main purpose is to be used as the
  * byte code generating backend of a compiler. You can subclass it to
@@ -52,7 +52,7 @@ public class InstructionFactory {
     protected ConstantPoolGen cp;
 
 
-    public InstructionFactory(ClassGen cg, ConstantPoolGen cp) {
+    public InstructionFactory(final ClassGen cg, final ConstantPoolGen cp) {
         this.cg = cg;
         this.cp = cp;
     }
@@ -60,14 +60,14 @@ public class InstructionFactory {
 
     /** Initialize with ClassGen object
      */
-    public InstructionFactory(ClassGen cg) {
+    public InstructionFactory(final ClassGen cg) {
         this(cg, cg.getConstantPool());
     }
 
 
     /** Initialize just with ConstantPoolGen object
      */
-    public InstructionFactory(ConstantPoolGen cp) {
+    public InstructionFactory(final ConstantPoolGen cp) {
         this(null, cp);
     }
 
@@ -82,18 +82,18 @@ public class InstructionFactory {
      * or INVOKESPECIAL
      * @see Const
      */
-    public InvokeInstruction createInvoke( String class_name, String name, Type ret_type,
-            Type[] arg_types, short kind ) {
+    public InvokeInstruction createInvoke( final String class_name, final String name, final Type ret_type,
+            final Type[] arg_types, final short kind ) {
         int index;
         int nargs = 0;
-        String signature = Type.getMethodSignature(ret_type, arg_types);
-        for (Type arg_type : arg_types) {
+        final String signature = Type.getMethodSignature(ret_type, arg_types);
+        for (final Type arg_type : arg_types) {
             nargs += arg_type.getSize();
         }
         if (kind == Const.INVOKEINTERFACE) {
-            index = cp.addInterfaceMethodref(class_name, name, signature);
+            index = this.cp.addInterfaceMethodref(class_name, name, signature);
         } else {
-            index = cp.addMethodref(class_name, name, signature);
+            index = this.cp.addMethodref(class_name, name, signature);
         }
         switch (kind) {
             case Const.INVOKESPECIAL:
@@ -142,12 +142,12 @@ public class InstructionFactory {
      *
      * @param s the string to print
      */
-    public InstructionList createPrintln( String s ) {
-        InstructionList il = new InstructionList();
-        int out = cp.addFieldref("java.lang.System", "out", "Ljava/io/PrintStream;");
-        int println = cp.addMethodref("java.io.PrintStream", "println", "(Ljava/lang/String;)V");
+    public InstructionList createPrintln( final String s ) {
+        final InstructionList il = new InstructionList();
+        final int out = this.cp.addFieldref("java.lang.System", "out", "Ljava/io/PrintStream;");
+        final int println = this.cp.addMethodref("java.io.PrintStream", "println", "(Ljava/lang/String;)V");
         il.append(new GETSTATIC(out));
-        il.append(new PUSH(cp, s));
+        il.append(new PUSH(this.cp, s));
         il.append(new INVOKEVIRTUAL(println));
         return il;
     }
@@ -156,16 +156,16 @@ public class InstructionFactory {
     /** Uses PUSH to push a constant value onto the stack.
      * @param value must be of type Number, Boolean, Character or String
      */
-    public Instruction createConstant( Object value ) {
+    public Instruction createConstant( final Object value ) {
         PUSH push;
         if (value instanceof Number) {
-            push = new PUSH(cp, (Number) value);
+            push = new PUSH(this.cp, (Number) value);
         } else if (value instanceof String) {
-            push = new PUSH(cp, (String) value);
+            push = new PUSH(this.cp, (String) value);
         } else if (value instanceof Boolean) {
-            push = new PUSH(cp, (Boolean) value);
+            push = new PUSH(this.cp, (Boolean) value);
         } else if (value instanceof Character) {
-            push = new PUSH(cp, (Character) value);
+            push = new PUSH(this.cp, (Character) value);
         } else {
             throw new ClassGenException("Illegal type: " + value.getClass());
         }
@@ -180,17 +180,17 @@ public class InstructionFactory {
         final String name;
 
 
-        MethodObject(String c, String n, Type r, Type[] a) {
-            class_name = c;
-            name = n;
-            result_type = r;
-            arg_types = a;
+        MethodObject(final String c, final String n, final Type r, final Type[] a) {
+            this.class_name = c;
+            this.name = n;
+            this.result_type = r;
+            this.arg_types = a;
         }
     }
 
 
-    private InvokeInstruction createInvoke( MethodObject m, short kind ) {
-        return createInvoke(m.class_name, m.name, m.result_type, m.arg_types, kind);
+    private InvokeInstruction createInvoke( final MethodObject m, final short kind ) {
+        return this.createInvoke(m.class_name, m.name, m.result_type, m.arg_types, kind);
     }
 
     private static final MethodObject[] append_mos = {
@@ -231,16 +231,16 @@ public class InstructionFactory {
     };
 
 
-    private static boolean isString( Type type ) {
-        return (type instanceof ObjectType) && 
+    private static boolean isString( final Type type ) {
+        return (type instanceof ObjectType) &&
               ((ObjectType) type).getClassName().equals("java.lang.String");
     }
 
 
-    public Instruction createAppend( Type type ) {
-        byte t = type.getType();
+    public Instruction createAppend( final Type type ) {
+        final byte t = type.getType();
         if (isString(type)) {
-            return createInvoke(append_mos[0], Const.INVOKEVIRTUAL);
+            return this.createInvoke(append_mos[0], Const.INVOKEVIRTUAL);
         }
         switch (t) {
             case Const.T_BOOLEAN:
@@ -251,10 +251,10 @@ public class InstructionFactory {
             case Const.T_SHORT:
             case Const.T_INT:
             case Const.T_LONG:
-                return createInvoke(append_mos[t], Const.INVOKEVIRTUAL);
+                return this.createInvoke(append_mos[t], Const.INVOKEVIRTUAL);
             case Const.T_ARRAY:
             case Const.T_OBJECT:
-                return createInvoke(append_mos[1], Const.INVOKEVIRTUAL);
+                return this.createInvoke(append_mos[1], Const.INVOKEVIRTUAL);
             default:
                 throw new RuntimeException("Oops: No append for this type? " + type);
         }
@@ -269,10 +269,10 @@ public class InstructionFactory {
      * @param kind how to access, i.e., GETFIELD, PUTFIELD, GETSTATIC, PUTSTATIC
      * @see Const
      */
-    public FieldInstruction createFieldAccess( String class_name, String name, Type type, short kind ) {
+    public FieldInstruction createFieldAccess( final String class_name, final String name, final Type type, final short kind ) {
         int index;
-        String signature = type.getSignature();
-        index = cp.addFieldref(class_name, name, signature);
+        final String signature = type.getSignature();
+        index = this.cp.addFieldref(class_name, name, signature);
         switch (kind) {
             case Const.GETFIELD:
                 return new GETFIELD(index);
@@ -297,7 +297,7 @@ public class InstructionFactory {
 
     /** Create typed return
      */
-    public static ReturnInstruction createReturn( Type type ) {
+    public static ReturnInstruction createReturn( final Type type ) {
         switch (type.getType()) {
             case Const.T_ARRAY:
             case Const.T_OBJECT:
@@ -322,7 +322,7 @@ public class InstructionFactory {
     }
 
 
-    private static ArithmeticInstruction createBinaryIntOp( char first, String op ) {
+    private static ArithmeticInstruction createBinaryIntOp( final char first, final String op ) {
         switch (first) {
             case '-':
                 return InstructionConst.ISUB;
@@ -350,7 +350,7 @@ public class InstructionFactory {
     }
 
 
-    private static ArithmeticInstruction createBinaryLongOp( char first, String op ) {
+    private static ArithmeticInstruction createBinaryLongOp( final char first, final String op ) {
         switch (first) {
             case '-':
                 return InstructionConst.LSUB;
@@ -378,7 +378,7 @@ public class InstructionFactory {
     }
 
 
-    private static ArithmeticInstruction createBinaryFloatOp( char op ) {
+    private static ArithmeticInstruction createBinaryFloatOp( final char op ) {
         switch (op) {
             case '-':
                 return InstructionConst.FSUB;
@@ -396,7 +396,7 @@ public class InstructionFactory {
     }
 
 
-    private static ArithmeticInstruction createBinaryDoubleOp( char op ) {
+    private static ArithmeticInstruction createBinaryDoubleOp( final char op ) {
         switch (op) {
             case '-':
                 return InstructionConst.DSUB;
@@ -419,8 +419,8 @@ public class InstructionFactory {
      *
      * @param op operation, such as "+", "*", "&lt;&lt;", etc.
      */
-    public static ArithmeticInstruction createBinaryOperation( String op, Type type ) {
-        char first = op.charAt(0);
+    public static ArithmeticInstruction createBinaryOperation( final String op, final Type type ) {
+        final char first = op.charAt(0);
         switch (type.getType()) {
             case Const.T_BYTE:
             case Const.T_SHORT:
@@ -442,7 +442,7 @@ public class InstructionFactory {
     /**
      * @param size size of operand, either 1 (int, e.g.) or 2 (double)
      */
-    public static StackInstruction createPop( int size ) {
+    public static StackInstruction createPop( final int size ) {
         return (size == 2) ? InstructionConst.POP2 : InstructionConst.POP;
     }
 
@@ -450,7 +450,7 @@ public class InstructionFactory {
     /**
      * @param size size of operand, either 1 (int, e.g.) or 2 (double)
      */
-    public static StackInstruction createDup( int size ) {
+    public static StackInstruction createDup( final int size ) {
         return (size == 2) ? InstructionConst.DUP2 : InstructionConst.DUP;
     }
 
@@ -458,7 +458,7 @@ public class InstructionFactory {
     /**
      * @param size size of operand, either 1 (int, e.g.) or 2 (double)
      */
-    public static StackInstruction createDup_2( int size ) {
+    public static StackInstruction createDup_2( final int size ) {
         return (size == 2) ? InstructionConst.DUP2_X2 : InstructionConst.DUP_X2;
     }
 
@@ -466,7 +466,7 @@ public class InstructionFactory {
     /**
      * @param size size of operand, either 1 (int, e.g.) or 2 (double)
      */
-    public static StackInstruction createDup_1( int size ) {
+    public static StackInstruction createDup_1( final int size ) {
         return (size == 2) ? InstructionConst.DUP2_X1 : InstructionConst.DUP_X1;
     }
 
@@ -474,7 +474,7 @@ public class InstructionFactory {
     /**
      * @param index index of local variable
      */
-    public static LocalVariableInstruction createStore( Type type, int index ) {
+    public static LocalVariableInstruction createStore( final Type type, final int index ) {
         switch (type.getType()) {
             case Const.T_BOOLEAN:
             case Const.T_CHAR:
@@ -500,7 +500,7 @@ public class InstructionFactory {
     /**
      * @param index index of local variable
      */
-    public static LocalVariableInstruction createLoad( Type type, int index ) {
+    public static LocalVariableInstruction createLoad( final Type type, final int index ) {
         switch (type.getType()) {
             case Const.T_BOOLEAN:
             case Const.T_CHAR:
@@ -526,7 +526,7 @@ public class InstructionFactory {
     /**
      * @param type type of elements of array, i.e., array.getElementType()
      */
-    public static ArrayInstruction createArrayLoad( Type type ) {
+    public static ArrayInstruction createArrayLoad( final Type type ) {
         switch (type.getType()) {
             case Const.T_BOOLEAN:
             case Const.T_BYTE:
@@ -555,7 +555,7 @@ public class InstructionFactory {
     /**
      * @param type type of elements of array, i.e., array.getElementType()
      */
-    public static ArrayInstruction createArrayStore( Type type ) {
+    public static ArrayInstruction createArrayStore( final Type type ) {
         switch (type.getType()) {
             case Const.T_BOOLEAN:
             case Const.T_BYTE:
@@ -584,89 +584,89 @@ public class InstructionFactory {
     /** Create conversion operation for two stack operands, this may be an I2C, instruction, e.g.,
      * if the operands are basic types and CHECKCAST if they are reference types.
      */
-    public Instruction createCast( Type src_type, Type dest_type ) {
+    public Instruction createCast( final Type src_type, final Type dest_type ) {
         if ((src_type instanceof BasicType) && (dest_type instanceof BasicType)) {
-            byte dest = dest_type.getType();
+            final byte dest = dest_type.getType();
             byte src = src_type.getType();
             if (dest == Const.T_LONG
                     && (src == Const.T_CHAR || src == Const.T_BYTE || src == Const.T_SHORT)) {
                 src = Const.T_INT;
             }
-            String name = "org.apache.commons.bcel6.generic." + short_names[src - Const.T_CHAR] + "2"
+            final String name = "org.apache.commons.bcel6.generic." + short_names[src - Const.T_CHAR] + "2"
                     + short_names[dest - Const.T_CHAR];
             Instruction i = null;
             try {
                 i = (Instruction) java.lang.Class.forName(name).newInstance();
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 throw new RuntimeException("Could not find instruction: " + name, e);
             }
             return i;
         } else if ((src_type instanceof ReferenceType) && (dest_type instanceof ReferenceType)) {
             if (dest_type instanceof ArrayType) {
-                return new CHECKCAST(cp.addArrayClass((ArrayType) dest_type));
+                return new CHECKCAST(this.cp.addArrayClass((ArrayType) dest_type));
             }
-            return new CHECKCAST(cp.addClass(((ObjectType) dest_type).getClassName()));
+            return new CHECKCAST(this.cp.addClass(((ObjectType) dest_type).getClassName()));
         } else {
             throw new RuntimeException("Can not cast " + src_type + " to " + dest_type);
         }
     }
 
 
-    public GETFIELD createGetField( String class_name, String name, Type t ) {
-        return new GETFIELD(cp.addFieldref(class_name, name, t.getSignature()));
+    public GETFIELD createGetField( final String class_name, final String name, final Type t ) {
+        return new GETFIELD(this.cp.addFieldref(class_name, name, t.getSignature()));
     }
 
 
-    public GETSTATIC createGetStatic( String class_name, String name, Type t ) {
-        return new GETSTATIC(cp.addFieldref(class_name, name, t.getSignature()));
+    public GETSTATIC createGetStatic( final String class_name, final String name, final Type t ) {
+        return new GETSTATIC(this.cp.addFieldref(class_name, name, t.getSignature()));
     }
 
 
-    public PUTFIELD createPutField( String class_name, String name, Type t ) {
-        return new PUTFIELD(cp.addFieldref(class_name, name, t.getSignature()));
+    public PUTFIELD createPutField( final String class_name, final String name, final Type t ) {
+        return new PUTFIELD(this.cp.addFieldref(class_name, name, t.getSignature()));
     }
 
 
-    public PUTSTATIC createPutStatic( String class_name, String name, Type t ) {
-        return new PUTSTATIC(cp.addFieldref(class_name, name, t.getSignature()));
+    public PUTSTATIC createPutStatic( final String class_name, final String name, final Type t ) {
+        return new PUTSTATIC(this.cp.addFieldref(class_name, name, t.getSignature()));
     }
 
 
-    public CHECKCAST createCheckCast( ReferenceType t ) {
+    public CHECKCAST createCheckCast( final ReferenceType t ) {
         if (t instanceof ArrayType) {
-            return new CHECKCAST(cp.addArrayClass((ArrayType) t));
+            return new CHECKCAST(this.cp.addArrayClass((ArrayType) t));
         }
-        return new CHECKCAST(cp.addClass((ObjectType) t));
+        return new CHECKCAST(this.cp.addClass((ObjectType) t));
     }
 
 
-    public INSTANCEOF createInstanceOf( ReferenceType t ) {
+    public INSTANCEOF createInstanceOf( final ReferenceType t ) {
         if (t instanceof ArrayType) {
-            return new INSTANCEOF(cp.addArrayClass((ArrayType) t));
+            return new INSTANCEOF(this.cp.addArrayClass((ArrayType) t));
         }
-        return new INSTANCEOF(cp.addClass((ObjectType) t));
+        return new INSTANCEOF(this.cp.addClass((ObjectType) t));
     }
 
 
-    public NEW createNew( ObjectType t ) {
-        return new NEW(cp.addClass(t));
+    public NEW createNew( final ObjectType t ) {
+        return new NEW(this.cp.addClass(t));
     }
 
 
-    public NEW createNew( String s ) {
-        return createNew(ObjectType.getInstance(s));
+    public NEW createNew( final String s ) {
+        return this.createNew(ObjectType.getInstance(s));
     }
 
 
     /** Create new array of given size and type.
      * @return an instruction that creates the corresponding array at runtime, i.e. is an AllocationInstruction
      */
-    public Instruction createNewArray( Type t, short dim ) {
+    public Instruction createNewArray( final Type t, final short dim ) {
         if (dim == 1) {
             if (t instanceof ObjectType) {
-                return new ANEWARRAY(cp.addClass((ObjectType) t));
+                return new ANEWARRAY(this.cp.addClass((ObjectType) t));
             } else if (t instanceof ArrayType) {
-                return new ANEWARRAY(cp.addArrayClass((ArrayType) t));
+                return new ANEWARRAY(this.cp.addArrayClass((ArrayType) t));
             } else {
                 return new NEWARRAY(t.getType());
             }
@@ -677,13 +677,13 @@ public class InstructionFactory {
         } else {
             at = new ArrayType(t, dim);
         }
-        return new MULTIANEWARRAY(cp.addArrayClass(at), dim);
+        return new MULTIANEWARRAY(this.cp.addArrayClass(at), dim);
     }
 
 
     /** Create "null" value for reference types, 0 for basic types like int
      */
-    public static Instruction createNull( Type type ) {
+    public static Instruction createNull( final Type type ) {
         switch (type.getType()) {
             case Const.T_ARRAY:
             case Const.T_OBJECT:
@@ -711,7 +711,7 @@ public class InstructionFactory {
     /** Create branch instruction by given opcode, except LOOKUPSWITCH and TABLESWITCH.
      * For those you should use the SWITCH compound instruction.
      */
-    public static BranchInstruction createBranchInstruction( short opcode, InstructionHandle target ) {
+    public static BranchInstruction createBranchInstruction( final short opcode, final InstructionHandle target ) {
         switch (opcode) {
             case Const.IFEQ:
                 return new IFEQ(target);
@@ -759,22 +759,22 @@ public class InstructionFactory {
     }
 
 
-    public void setClassGen( ClassGen c ) {
-        cg = c;
+    public void setClassGen( final ClassGen c ) {
+        this.cg = c;
     }
 
 
     public ClassGen getClassGen() {
-        return cg;
+        return this.cg;
     }
 
 
-    public void setConstantPool( ConstantPoolGen c ) {
-        cp = c;
+    public void setConstantPool( final ConstantPoolGen c ) {
+        this.cp = c;
     }
 
 
     public ConstantPoolGen getConstantPool() {
-        return cp;
+        return this.cp;
     }
 }
